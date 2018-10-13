@@ -62,7 +62,7 @@ def runSim():
                 newSrcList.append(follower)
         srcList = newSrcList # spread outward like waves
         if numHeardNews >= 0.9*NUM_USERS:
-            print("total time taken:", unit)
+            print("total time taken:", unit, "hours")
             break
         unit += 1
 
