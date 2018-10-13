@@ -11,7 +11,7 @@ import time
 # initialization constants
 NUM_USERS = 20000
 AVG_FOLLOWERS = 15
-MAX_ROUNDS = 10
+MAX_ROUNDS = 100
 INIT_SRC_NUM = 5
 # gamma distribution parameters
 K = AVG_FOLLOWERS/2
@@ -28,11 +28,11 @@ def calcTime(round):
     global a1
     return 8*math.exp(-a1*round)
 
-def calcProbInform(round):
+def updateProbInform(round):
     global informProb, a2
     informProb = 1 - informProb*math.exp(-a2*round)
 
-def calcProbForward(round):
+def updateProbForward(round):
     global informProb, a2
     informProb = 1 - forwardProb*math.exp(-a2*round)
 
@@ -63,7 +63,6 @@ def runSim():
     for i in range(INIT_SRC_NUM):
         initSource = userList[int(NUM_USERS * random())]
         numHeardNews = initSource.hearNews(numHeardNews)
-        numHeardNews += 1
         srcList.append(initSource) # choose the first user to receive news
 
     for round in range(MAX_ROUNDS):
@@ -74,15 +73,20 @@ def runSim():
         for n in neighborList:
             if random() < informProb and not n.heardNews: # if chooses to be informed after it was forwarded to them
                 numHeardNews = n.hearNews(numHeardNews)
-            elif not n.heardNews: # chose not to hear the news after being forwarded it
+                if numHeardNews >= 0.9*NUM_USERS:
+                    simTime += calcTime(round)
+                    break
+            else: # chose not to hear the news after being forwarded it
                 neighborList.remove(n)
         srcList = neighborList # spread outward like waves
         simTime += calcTime(round)
+        updateProbInform(round)
+        updateProbForward(round)
         if numHeardNews >= 0.9*NUM_USERS:
             break
     end = time.time()
     print("Time to reach <= 90%% users:", simTime, "hours.")
-    print(numHeardNews, "many people heard the news by round", round)
+    print(numHeardNews, "people heard the news by round", round)
     print("Elapsed calculation time:", end - start, "seconds.")
 
 if __name__ == "__main__":
