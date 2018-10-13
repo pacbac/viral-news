@@ -6,8 +6,9 @@ import math
 from user import User
 import threading
 from queue import PriorityQueue
+import time
 
-NUM_USERS = 5000
+NUM_USERS = 20000
 AVG_FOLLOWERS = 20
 MAX_TIME = 1000
 INIT_SRC_NUM = 5
@@ -38,6 +39,7 @@ def initSim():
     return G, userList
 
 def runSim():
+    start = time.time()
     simTime = 0
     G, userList = initSim()
     srcList = []
@@ -54,7 +56,6 @@ def runSim():
         for src in srcList:
             if random() < src.interest: # if the user decides to forward it to his neighbors
                 numHeardNews = src.shareNews(numHeardNews, toBeHeard, unit)
-        print(len(toBeHeard.queue))
         while not toBeHeard.empty() and toBeHeard.queue[0][0] == unit: # continue popping users from queue while it is their time to be informed
             thisUnit, (parent, follower) = toBeHeard.get()
             if random() < follower.calcProbInform(parent): # if the follower decides to be informed
@@ -62,7 +63,9 @@ def runSim():
                 newSrcList.append(follower)
         srcList = newSrcList # spread outward like waves
         if numHeardNews >= 0.9*NUM_USERS:
-            print("total time taken:", unit, "hours")
+            end = time.time()
+            print("Total simulated time taken:", unit, "hours")
+            print("Elapsed time:", end - start, "seconds")
             break
         unit += 1
 
